@@ -1,0 +1,41 @@
+[
+  {
+    "id": "daniel-admin",
+    "firstName": "Daniel",
+    "lastName": "Costa",
+    "email": "danielacosta@byui.edu",
+    "role": "admin",
+    "major": "Information Systems",
+    "graduationYear": 2027,
+    "bio": "Building a place where BYU-Idaho students can turn good ideas into real projects.",
+    "skills": ["Product design", "Web development", "Community building"],
+    "links": [],
+    "createdAt": "2026-10-21T00:00:00.000Z"
+  },
+  {
+    "id": "alex-morgan",
+    "firstName": "Alex",
+    "lastName": "Morgan",
+    "email": "alex.morgan@byui.edu",
+    "role": "student",
+    "major": "Computer Science",
+    "graduationYear": 2027,
+    "bio": "Interested in building thoughtful products that make campus life easier.",
+    "skills": ["React Native", "Product design", "Research"],
+    "links": [],
+    "createdAt": "2026-10-21T00:00:00.000Z"
+  },
+  {
+    "id": "community-supporter",
+    "firstName": "Community",
+    "lastName": "Supporter",
+    "email": "supporter@example.com",
+    "role": "supporter",
+    "major": null,
+    "graduationYear": null,
+    "bio": "Here to encourage student ideas and offer support.",
+    "skills": [],
+    "links": [],
+    "createdAt": "2026-10-21T00:00:00.000Z"
+  }
+]

@@ -1,0 +1,9 @@
+node_modules/
+.svelte-kit/
+build/
+dist/
+test-results/
+.env
+.env.*
+!.env.example
+
