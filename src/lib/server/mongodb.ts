@@ -8,10 +8,23 @@ const credentials = MONGODB_USERNAME && MONGODB_PASSWORD
   ? `${encodeURIComponent(MONGODB_USERNAME)}:${encodeURIComponent(MONGODB_PASSWORD)}`
   : '';
 
-const connectionUri = MONGODB_URI
-  ?.replaceAll('${MONGODB_USERNAME}', encodeURIComponent(MONGODB_USERNAME ?? ''))
-  .replaceAll('${MONGODB_PASSWORD}', encodeURIComponent(MONGODB_PASSWORD ?? ''))
-  .replace('<username>:<password>', credentials);
+function buildConnectionUri(uri: string | undefined) {
+  if (!uri) return undefined;
+  const resolved = uri
+    .replaceAll('${MONGODB_USERNAME}', encodeURIComponent(MONGODB_USERNAME ?? ''))
+    .replaceAll('${MONGODB_PASSWORD}', encodeURIComponent(MONGODB_PASSWORD ?? ''))
+    .replace('<username>:<password>', credentials);
+  try {
+    const parsed = new URL(resolved);
+    if (MONGODB_USERNAME) parsed.username = MONGODB_USERNAME;
+    if (MONGODB_PASSWORD) parsed.password = MONGODB_PASSWORD;
+    return parsed.toString();
+  } catch {
+    return resolved;
+  }
+}
+
+const connectionUri = buildConnectionUri(MONGODB_URI);
 
 let clientPromise: Promise<MongoClient> | undefined;
 const client = connectionUri ? new MongoClient(connectionUri) : undefined;
@@ -37,4 +50,9 @@ export async function getDatabase(): Promise<Db> {
 
   const connectedClient = await clientPromise;
   return connectedClient.db(MONGODB_DB);
+}
+
+export async function getMongoClient(): Promise<MongoClient> {
+  await getDatabase();
+  return clientPromise!;
 }

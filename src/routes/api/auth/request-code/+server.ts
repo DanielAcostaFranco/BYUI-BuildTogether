@@ -53,6 +53,6 @@ export async function POST({ request }) {
   } catch (error) {
     await codes.deleteMany({ email });
     console.error('Could not send sign-in code:', error);
-    return json({ ok: false, message: 'We could not send your code. Check the email provider configuration.' }, { status: 502 });
+    return json({ ok: false, message: 'We could not send your code. Check the Brevo API key, verified sender, and transactional email activation.' }, { status: 502 });
   }
 }

@@ -2,17 +2,14 @@
   import { ArrowLeft, ArrowRight, Check, LockKeyhole } from '@lucide/svelte';
   import { onMount } from 'svelte';
   import { dev } from '$app/environment';
+  import { page } from '$app/stores';
   import { loginSchema } from '$lib/schemas';
 
   const demoAccounts = [
     ['John Doe', 'demo-student-001@example.invalid'],
     ['Sofia Martinez', 'demo-student-002@example.invalid'],
-    ['Noah Williams', 'demo-student-003@example.invalid'],
-    ['Maya Patel', 'demo-student-004@example.invalid'],
-    ['Liam Chen', 'demo-student-005@example.invalid'],
-    ['Emma Johnson', 'demo-student-006@example.invalid'],
-    ['Olivia Garcia', 'demo-student-007@example.invalid'],
-    ['Ethan Brooks', 'demo-student-008@example.invalid']
+    ['Maya Patel', 'demo-student-003@example.invalid'],
+    ['Liam Chen', 'demo-student-004@example.invalid']
   ];
 
   let email = '';
@@ -67,7 +64,9 @@
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.message ?? 'That code is not correct.');
-      window.location.href = '/home';
+      const requestedNext = $page.url.searchParams.get('next');
+      const safeNext = requestedNext && requestedNext.startsWith('/') && !requestedNext.startsWith('//') && !requestedNext.includes('\\') ? requestedNext : '/home';
+      window.location.href = safeNext;
     } catch (verificationError) {
       error = verificationError instanceof Error ? verificationError.message : 'That code is not correct.';
     } finally {

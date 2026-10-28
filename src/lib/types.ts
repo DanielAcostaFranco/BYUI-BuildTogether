@@ -1,7 +1,9 @@
 export type ProjectCategory = 'Technology' | 'Design' | 'Community' | 'Business' | 'Research';
 export type LocationType = 'Remote' | 'Hybrid' | 'In person';
-export type ProjectStatus = 'Recruiting' | 'Idea';
-export type ProjectRole = { title: string; description: string; skills: string[]; peopleNeeded: number };
+export type ProjectStatus = 'Recruiting' | 'Idea' | 'In progress' | 'Completed';
+export type ProjectRole = { id?: string; title: string; description: string; skills: string[]; peopleNeeded: number };
+export type ProjectLink = { label: string; url: string };
+export type ProjectUpdate = { id: string; text: string; authorId: string; authorName: string; createdAt: Date };
 
 export type Project = {
   id: string;
@@ -16,6 +18,8 @@ export type Project = {
   skills: string[];
   interests?: string[];
   roles?: ProjectRole[];
+  links?: ProjectLink[];
+  updates?: ProjectUpdate[];
   hoursPerWeek: string;
   location: LocationType;
   openRoles: number;

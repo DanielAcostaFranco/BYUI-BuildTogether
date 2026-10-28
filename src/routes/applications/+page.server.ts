@@ -18,12 +18,19 @@ export async function load({ cookies }) {
       title: notification.title,
       message: notification.message,
       projectId: notification.projectId,
+      invitationId: notification.invitationId,
       createdAt: notification.createdAt
     })),
     applications: applications.map((application) => ({
       id: application.id,
       status: application.status,
+      roleTitle: application.roleTitle ?? '',
       message: application.message ?? '',
+      contribution: application.contribution ?? '',
+      experienceLevel: application.experienceLevel ?? '',
+      experienceDetails: application.experienceDetails ?? '',
+      workSampleUrl: application.workSampleUrl ?? '',
+      availabilityHours: application.availabilityHours ?? '',
       createdAt: application.createdAt,
       project: projectsById.get(application.projectId) ?? null
     })).filter((application) => application.project)

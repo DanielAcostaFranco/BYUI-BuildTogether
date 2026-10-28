@@ -29,7 +29,9 @@ export async function POST({ request, cookies }) {
     creatorId: user.id,
     skills: result.data.skills,
     interests: result.data.interests,
-    roles: result.data.roles,
+    roles: result.data.roles.map((role) => ({ ...role, id: `role-${randomUUID()}` })),
+    links: result.data.links,
+    updates: [],
     hoursPerWeek: result.data.hoursPerWeek,
     location: result.data.location,
     openRoles: result.data.openRoles,
@@ -42,6 +44,7 @@ export async function POST({ request, cookies }) {
     id: `membership-${randomUUID()}`,
     projectId,
     userId: user.id,
+    accessRole: 'owner',
     role: 'Creator',
     joinedAt: new Date()
   });

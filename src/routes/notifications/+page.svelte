@@ -11,10 +11,10 @@
     if (response.ok) await invalidateAll();
   }
 
-  async function openNotification(id: string, projectId: string | undefined) {
-    if (!projectId) return;
+  async function openNotification(id: string, projectId: string | undefined, invitationId: string | undefined) {
+    if (!projectId && !invitationId) return;
     await markRead(id);
-    await goto(`/projects/${projectId}`);
+    await goto(invitationId ? `/invitations/${invitationId}` : `/projects/${projectId}`);
   }
 
   async function markAllRead() {
@@ -34,7 +34,7 @@
   <a class="back" href="/home"><ArrowLeft size={16} /> Back to home</a>
   <div class="heading"><div><p class="eyebrow">Your activity</p><h1>Notifications.</h1><p>Requests and updates from your projects, all in one place.</p></div>{#if data.notifications.some((item) => !item.read)}<button class="mark-all" type="button" onclick={markAllRead} disabled={busy}><CheckCheck size={16} /> Mark all as read</button>{/if}</div>
   {#if data.notifications.length > 0}
-    <div class="notification-list">{#each data.notifications as notification}<article class:unread={!notification.read} class="notification"><span class="icon"><Bell size={17} /></span><div class="notification-body"><div class="title-row"><h2>{notification.title}</h2>{#if !notification.read}<span class="unread-label">New</span>{/if}</div><p>{notification.message}</p><small>{new Date(notification.createdAt).toLocaleString()}</small></div><div class="actions">{#if notification.projectId}<button type="button" onclick={() => openNotification(notification.id, notification.projectId)}>Open project <ArrowUpRight size={14} /></button>{/if}{#if !notification.read}<button type="button" class="text-button" onclick={() => markRead(notification.id)}>Mark read</button>{/if}</div></article>{/each}</div>
+    <div class="notification-list">{#each data.notifications as notification}<article class:unread={!notification.read} class="notification"><span class="icon"><Bell size={17} /></span><div class="notification-body"><div class="title-row"><h2>{notification.title}</h2>{#if !notification.read}<span class="unread-label">New</span>{/if}</div><p>{notification.message}</p><small>{new Date(notification.createdAt).toLocaleString()}</small></div><div class="actions">{#if notification.projectId || notification.invitationId}<button type="button" onclick={() => openNotification(notification.id, notification.projectId, notification.invitationId)}>{notification.invitationId ? 'Review invitation' : 'Open project'} <ArrowUpRight size={14} /></button>{/if}{#if !notification.read}<button type="button" class="text-button" onclick={() => markRead(notification.id)}>Mark read</button>{/if}</div></article>{/each}</div>
   {:else}
     <section class="empty"><Bell size={23} /><h2>All caught up.</h2><p>When someone asks to join your project, you will see it here.</p></section>
   {/if}

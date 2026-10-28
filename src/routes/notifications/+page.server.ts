@@ -14,8 +14,8 @@ export async function load({ cookies }) {
     .toArray();
 
   return {
-    notifications: notifications.map(({ id, title, message, type, projectId, createdAt, read }) => ({
-      id, title, message, type, projectId, createdAt, read: read === true
+    notifications: notifications.map(({ id, title, message, type, projectId, invitationId, createdAt, read }) => ({
+      id, title, message, type, projectId, invitationId, createdAt, read: read === true
     }))
   };
 }

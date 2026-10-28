@@ -1,4 +1,15 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+async function signInWithLocalCode(page: Page, email: string) {
+  await page.goto('/login');
+  await page.getByLabel('Email address').fill(email);
+  await page.getByRole('button', { name: 'Send me a code' }).click();
+  const code = (await page.getByRole('status').textContent())?.match(/\d{6}/)?.[0];
+  expect(code).toBeTruthy();
+  await page.getByLabel('Verification code').fill(code ?? '');
+  await page.getByRole('button', { name: 'Verify and sign in' }).click();
+  await page.waitForURL('**/home');
+}
 
 test('visitor can search the project directory', async ({ page }) => {
   await page.goto('/');
@@ -66,9 +77,23 @@ test('a project owner receives and can read a new join-request notification', as
   await page.getByRole('button', { name: 'Verify and sign in' }).click();
   await page.waitForURL('**/home');
   await page.goto('/projects/demo-project-001');
-  await page.getByLabel('Application message').fill('I can help with the research and student interviews.');
+  await expect(page.getByText('Add your first and last name before requesting to join.')).toBeVisible();
+  await page.getByRole('link', { name: 'Complete your profile' }).click();
+  await page.getByRole('button', { name: 'Edit profile', exact: true }).click();
+  await page.getByLabel('First name').fill('Join');
+  await page.getByLabel('Last name').fill('Applicant');
+  await page.getByLabel('Major').selectOption('Computer Science');
+  await page.getByRole('button', { name: 'Save profile' }).click();
+  await expect(page.getByRole('status')).toContainText('Profile saved');
+  await page.goto('/projects/demo-project-001');
+  await page.getByLabel('Position to apply for').selectOption('legacy-role-0');
+  await page.getByLabel('Why do you want to join?').fill('I want to make student resources easier to find.');
+  await page.getByLabel('How could you help?').fill('I can help with research and student interviews.');
+  await page.getByLabel('Relevant experience').selectOption('Relevant experience');
+  await page.getByLabel('Experience or past work').fill('I interviewed classmates for a course research project.');
+  await page.getByLabel('Time you can commit each week').selectOption('3–5 hours');
   await page.getByRole('button', { name: 'Request to join' }).click();
-  await expect(page.getByRole('status')).toContainText('Application sent');
+  await expect(page.getByText('Your application is pending.')).toBeVisible();
 
   const ownerContext = await browser.newContext();
   try {
@@ -88,11 +113,26 @@ test('a project owner receives and can read a new join-request notification', as
     const newest = ownerPage.locator('.notification').first();
     await expect(newest).toContainText('New request to join');
     await expect(newest).toContainText('Study Buddy Finder');
+    await expect(newest).toContainText('Join Applicant');
     await expect(newest.getByText('New', { exact: true })).toBeVisible();
     await newest.getByRole('button', { name: 'Mark read' }).click();
     await expect(newest.getByText('New', { exact: true })).toHaveCount(0);
     const countAfter = await (await ownerPage.request.get('/api/notifications/unread-count')).json();
     expect(countAfter.unread).toBe(countBefore.unread - 1);
+    await ownerPage.goto('/projects/demo-project-001');
+    const request = ownerPage.locator('#join-requests .application').filter({ hasText: email });
+    await expect(request).toBeVisible();
+    await expect(request.getByRole('link', { name: email })).toHaveAttribute('href', `mailto:${email}`);
+    await request.getByText('Read full request').click();
+    await expect(request).toContainText('I interviewed classmates for a course research project.');
+    await request.getByRole('button', { name: 'Reject' }).click();
+    const rejectDialog = ownerPage.getByRole('dialog');
+    await expect(rejectDialog).toContainText('Join Applicant');
+    await rejectDialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(request).toBeVisible();
+    await request.getByRole('button', { name: 'Reject' }).click();
+    await rejectDialog.getByRole('button', { name: 'Yes, reject' }).click();
+    await expect(ownerPage.locator('#join-requests .application').filter({ hasText: email })).toHaveCount(0);
   } finally {
     await ownerContext.close();
   }
@@ -173,4 +213,155 @@ test('signing out revokes the session and returns to the public landing page', a
   await page.context().addCookies([session!]);
   await page.goto('/home');
   await page.waitForURL('**/login');
+});
+
+test('a filled position closes recruitment while links and team updates remain public', async ({ page, browser }) => {
+  const ownerEmail = `owner-flow-${Date.now()}@example.com`;
+  await page.goto('/login');
+  await page.getByLabel('Email address').fill(ownerEmail);
+  await page.getByRole('button', { name: 'Send me a code' }).click();
+  const ownerCode = (await page.getByRole('status').textContent())?.match(/\d{6}/)?.[0];
+  expect(ownerCode).toBeTruthy();
+  await page.getByLabel('Verification code').fill(ownerCode ?? '');
+  await page.getByRole('button', { name: 'Verify and sign in' }).click();
+  await page.waitForURL('**/home');
+  await page.goto('/projects/new');
+  await page.getByRole('button', { name: 'Add project link' }).click();
+  await page.getByLabel('Project link label 1').fill('GitHub');
+  await page.getByLabel('Project link URL 1').fill('https://github.com/example/student-project');
+  await page.getByLabel('Project title').fill('Campus Design Lab');
+  await page.getByLabel('Project description').fill('A student design team building and testing a useful campus prototype together.');
+  await page.getByLabel('Department or academic area').selectOption('Other');
+  await page.getByLabel('Total team size').fill('2');
+  await page.getByLabel('Position or need 1').fill('Product designer');
+  await page.getByLabel('Position description 1').fill('Design and test a prototype with student feedback.');
+  await page.getByLabel('Add a skill to position 1').selectOption('Product Design');
+  await page.getByRole('button', { name: 'Add skill', exact: true }).click();
+  await page.getByLabel('Accept community guidelines').check();
+  await page.getByRole('button', { name: 'Create project' }).click();
+  await page.waitForURL('**/projects/project-*');
+  const projectUrl = page.url();
+
+  const applicantContext = await browser.newContext();
+  const guestContext = await browser.newContext();
+  try {
+    const applicant = await applicantContext.newPage();
+    await applicant.goto('/login');
+    await applicant.getByLabel('Email address').fill(`applicant-flow-${Date.now()}@example.com`);
+    await applicant.getByRole('button', { name: 'Send me a code' }).click();
+    const code = (await applicant.getByRole('status').textContent())?.match(/\d{6}/)?.[0];
+    expect(code).toBeTruthy();
+    await applicant.getByLabel('Verification code').fill(code ?? '');
+    await applicant.getByRole('button', { name: 'Verify and sign in' }).click();
+    await applicant.waitForURL('**/home');
+    await applicant.goto('/profile');
+    await applicant.getByRole('button', { name: 'Edit profile', exact: true }).click();
+    await applicant.getByLabel('First name').fill('New');
+    await applicant.getByLabel('Last name').fill('Teammate');
+    await applicant.getByLabel('Major').selectOption('Computer Science');
+    await applicant.getByRole('button', { name: 'Save profile' }).click();
+    await expect(applicant.getByRole('status')).toContainText('Profile saved');
+    await applicant.goto(projectUrl);
+    await applicant.getByLabel('Position to apply for').selectOption({ label: 'Product designer · 1 open' });
+    await applicant.getByLabel('Why do you want to join?').fill('I want to learn while building a useful student product.');
+    await applicant.getByLabel('How could you help?').fill('I can organize feedback and help test early designs.');
+    await applicant.getByLabel('Relevant experience').selectOption('New to this');
+    await applicant.getByLabel('Time you can commit each week').selectOption('3–5 hours');
+    await applicant.getByRole('button', { name: 'Request to join' }).click();
+    await expect(applicant.getByText('Your application is pending.')).toBeVisible();
+
+    await page.reload();
+    await expect(page.locator('.application').getByText('Product designer')).toBeVisible();
+    await page.getByRole('button', { name: 'Accept' }).click();
+    const acceptDialog = page.getByRole('dialog');
+    await expect(acceptDialog).toContainText('New Teammate');
+    await acceptDialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(page.locator('#join-requests .application')).toHaveCount(1);
+    await page.getByRole('button', { name: 'Accept' }).click();
+    await acceptDialog.getByRole('button', { name: 'Yes, accept' }).click();
+    await expect(page.locator('.status')).toContainText('In progress');
+    await expect(page.getByText('Team complete · following progress')).toBeVisible();
+
+    await applicant.reload();
+    await expect(applicant.getByText('You are on this team.')).toBeVisible();
+    await applicant.getByLabel('Share a progress update').fill('We built the first prototype and are preparing student interviews.');
+    await applicant.getByRole('button', { name: 'Post update' }).click();
+    await expect(applicant.getByText('We built the first prototype and are preparing student interviews.')).toBeVisible();
+
+    const guest = await guestContext.newPage();
+    await guest.goto(projectUrl);
+    await expect(guest.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', 'https://github.com/example/student-project');
+    await expect(guest.getByText('We built the first prototype and are preparing student interviews.')).toBeVisible();
+    await expect(guest.getByRole('button', { name: 'Request to join' })).toHaveCount(0);
+  } finally {
+    await applicantContext.close();
+    await guestContext.close();
+  }
+});
+
+test('owner adds an existing student, invites a new one, and removes a member', async ({ page, browser }) => {
+  const stamp = Date.now();
+  const ownerEmail = `team-owner-${stamp}@byui.edu`;
+  const existingEmail = `team-existing-${stamp}@byui.edu`;
+  const invitedEmail = `team-invited-${stamp}@byui.edu`;
+  const existingContext = await browser.newContext();
+  const invitedContext = await browser.newContext();
+  try {
+    const existingPage = await existingContext.newPage();
+    await signInWithLocalCode(existingPage, existingEmail);
+    await signInWithLocalCode(page, ownerEmail);
+    await page.goto('/projects/new');
+    await page.getByLabel('Project title').fill('Team Invitation Test Project');
+    await page.getByLabel('Project description').fill('A student team building and testing a useful campus project together.');
+    await page.getByLabel('Department or academic area').selectOption('Other');
+    await page.getByLabel('Total team size').fill('3');
+    await page.getByLabel('Position or need 1').fill('Product designer');
+    await page.getByLabel('Position description 1').fill('Design and test a prototype with student feedback.');
+    await page.getByLabel('People needed for position 1').fill('2');
+    await page.getByLabel('Add a skill to position 1').selectOption('Product Design');
+    await page.getByRole('button', { name: 'Add skill', exact: true }).click();
+    await page.getByLabel('Accept community guidelines').check();
+    await page.getByRole('button', { name: 'Create project' }).click();
+    await page.waitForURL('**/projects/project-*');
+    const projectUrl = page.url();
+    await page.goto(`${projectUrl}/team`);
+
+    await page.getByLabel('BYU-Idaho email').fill(existingEmail);
+    await page.getByLabel('Position').selectOption({ label: 'Product designer · 2 open' });
+    await page.getByRole('button', { name: 'Add or invite student' }).click();
+    await expect(page.getByRole('status')).toContainText('Team member added');
+    await expect(page.locator('.team-count')).toContainText('2 of 3 members');
+
+    await page.getByLabel('BYU-Idaho email').fill(invitedEmail);
+    await page.getByLabel('Position').selectOption({ label: 'Product designer · 1 open' });
+    await page.getByRole('button', { name: 'Add or invite student' }).click();
+    await expect(page.getByRole('status')).toContainText('Invitation sent');
+    await expect(page.locator('.invitation-list')).toContainText(invitedEmail);
+    const invitationUrl = await page.getByRole('link', { name: 'Open invitation' }).getAttribute('href');
+    expect(invitationUrl).toBeTruthy();
+
+    const invitedPage = await invitedContext.newPage();
+    await invitedPage.goto(invitationUrl ?? '');
+    await invitedPage.waitForURL('**/login?next=*');
+    await invitedPage.getByLabel('Email address').fill(invitedEmail);
+    await invitedPage.getByRole('button', { name: 'Send me a code' }).click();
+    const code = (await invitedPage.getByRole('status').textContent())?.match(/\d{6}/)?.[0];
+    expect(code).toBeTruthy();
+    await invitedPage.getByLabel('Verification code').fill(code ?? '');
+    await invitedPage.getByRole('button', { name: 'Verify and sign in' }).click();
+    await invitedPage.waitForURL('**/invitations/*');
+    await invitedPage.getByRole('button', { name: 'Accept invitation' }).click();
+    await expect(invitedPage.getByText('You are on the team.')).toBeVisible();
+
+    await page.reload();
+    await expect(page.locator('.team-count')).toContainText('3 of 3 members');
+    const member = page.locator('.member-card').filter({ hasText: existingEmail });
+    page.once('dialog', (dialog) => dialog.accept());
+    await member.getByRole('button', { name: 'Remove from team' }).click();
+    await expect(page.getByRole('status')).toContainText('Team member removed');
+    await expect(page.locator('.team-count')).toContainText('2 of 3 members');
+  } finally {
+    await existingContext.close();
+    await invitedContext.close();
+  }
 });

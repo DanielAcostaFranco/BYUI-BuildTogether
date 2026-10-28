@@ -45,6 +45,7 @@ body { color: var(--byui-black); background: var(--byui-paper); font-family: var
 .primary-nav a { color: var(--byui-gray); font-family: var(--byui-display); }
 .primary-nav a.active, .primary-nav a:hover { color: var(--byui-blue); border-bottom-color: var(--byui-blue); }
 .sign-in, .text-link { color: var(--byui-deep-blue); font-family: var(--byui-display); }
+.topbar .top-actions { margin-left: auto; }
 .button-dark { background: var(--byui-blue); color: #fff; }
 .button-outline { border-color: var(--byui-gray); color: var(--byui-deep-blue); }
 .hero { background: #fff; }
@@ -216,4 +217,11 @@ button, input, select, textarea { font-family: var(--byui-body); }
   html { scroll-behavior: auto; }
   .route-content { animation: none; }
   :is(.button, .session-dock button, .dashboard-page .project-card, .applications-page .application-card, .mine-page .mine-card, .team-page .member-card) { transition: none; }
+}
+@media (max-width: 720px) {
+  .topbar .top-actions .sign-in, .topbar .top-actions .button { display: inline-flex; }
+}
+@media (max-width: 470px) {
+  .topbar { height: auto; min-height: 65px; flex-wrap: wrap; padding-top: 12px; padding-bottom: 10px; row-gap: 8px; }
+  .topbar .top-actions { width: 100%; justify-content: flex-end; }
 }

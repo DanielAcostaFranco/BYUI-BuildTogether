@@ -115,10 +115,14 @@ function connectionSettings() {
   if (!MONGODB_URI || !MONGODB_DB) throw new Error('Set MONGODB_URI and MONGODB_DB in .env before running this script.');
   const credentials = MONGODB_USERNAME && MONGODB_PASSWORD
     ? `${encodeURIComponent(MONGODB_USERNAME)}:${encodeURIComponent(MONGODB_PASSWORD)}` : '';
+  const rawUri = MONGODB_URI.replaceAll('${MONGODB_USERNAME}', encodeURIComponent(MONGODB_USERNAME ?? ''))
+    .replaceAll('${MONGODB_PASSWORD}', encodeURIComponent(MONGODB_PASSWORD ?? ''))
+    .replace('<username>:<password>', credentials);
+  const parsedUri = new URL(rawUri);
+  if (MONGODB_USERNAME) parsedUri.username = MONGODB_USERNAME;
+  if (MONGODB_PASSWORD) parsedUri.password = MONGODB_PASSWORD;
   return {
-    uri: MONGODB_URI.replaceAll('${MONGODB_USERNAME}', encodeURIComponent(MONGODB_USERNAME ?? ''))
-      .replaceAll('${MONGODB_PASSWORD}', encodeURIComponent(MONGODB_PASSWORD ?? ''))
-      .replace('<username>:<password>', credentials),
+    uri: parsedUri.toString(),
     databaseName: MONGODB_DB,
     adminEmail: env.MONGODB_ADMIN_EMAIL?.trim().toLowerCase()
   };
@@ -139,15 +143,41 @@ async function findCreator(database, adminEmail) {
 
 async function main() {
   const args = process.argv.slice(2);
-  if (args.some((arg) => !['--apply', '--dry-run'].includes(arg)) || (args.includes('--apply') && args.includes('--dry-run'))) {
-    throw new Error('Usage: npm run seed:demo -- [--dry-run | --apply]');
+  if (args.some((arg) => !['--apply', '--dry-run', '--reset'].includes(arg)) || args.filter((arg) => ['--apply', '--dry-run', '--reset'].includes(arg)).length > 1) {
+    throw new Error('Usage: npm run seed:demo -- [--dry-run | --apply | --reset]');
   }
   const apply = args.includes('--apply');
+  const reset = args.includes('--reset');
   const { uri, databaseName, adminEmail } = connectionSettings();
   const client = new MongoClient(uri, { serverSelectionTimeoutMS: 10000 });
   try {
     await client.connect();
     const database = client.db(databaseName);
+    if (reset) {
+      const generatedUsers = demoUsers();
+      const generatedProjects = demoProjects();
+      const userIds = generatedUsers.map(({ id }) => id);
+      const projectIds = generatedProjects.map(({ id }) => id);
+      const relatedFilters = { $or: [{ projectId: { $in: projectIds } }, { userId: { $in: userIds } }, { applicantId: { $in: userIds } }] };
+      const targets = [
+        ['projectWorkspaceLinks', { projectId: { $in: projectIds } }],
+        ['teamInvitations', { projectId: { $in: projectIds } }],
+        ['notifications', relatedFilters],
+        ['projectApplications', relatedFilters],
+        ['projectMembers', { $or: [{ projectId: { $in: projectIds } }, { userId: { $in: userIds } }] }],
+        ['projects', { id: { $in: projectIds }, isDemo: true }],
+        ['users', { id: { $in: userIds }, isDemo: true }]
+      ];
+      console.log('Demo reset scope: demo project/user IDs only.');
+      for (const [collectionName, filter] of targets) {
+        const count = await database.collection(collectionName).countDocuments(filter);
+        console.log(`${collectionName}: ${count} records to remove.`);
+        const result = await database.collection(collectionName).deleteMany(filter);
+        console.log(`  Removed ${result.deletedCount}.`);
+      }
+      console.log('Demo reset complete. Run `npm run seed:demo -- --apply` to recreate the demo records.');
+      return;
+    }
     const creator = await findCreator(database, adminEmail);
     const students = demoUsers();
     const projects = demoProjects();

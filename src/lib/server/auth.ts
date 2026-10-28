@@ -2,9 +2,9 @@ import { randomBytes, randomInt, scrypt as nodeScrypt, timingSafeEqual, createHa
 import { promisify } from 'node:util';
 import { env } from '$env/dynamic/private';
 import { dev } from '$app/environment';
-import { Resend } from 'resend';
 import type { Db } from 'mongodb';
 import { isDemoAddress } from '$lib/auth-policy';
+import { sendBrevoVerificationCode } from '$lib/server/brevo';
 
 const scrypt = promisify(nodeScrypt);
 const OTP_TTL_MS = 10 * 60 * 1000;
@@ -78,26 +78,20 @@ export async function sendVerificationCode(email: string, code: string, demoUser
     throw new Error('AUTH_EMAIL_MODE=local is only available during local development.');
   }
 
-  if (!env.RESEND_API_KEY) {
-    if (dev) {
-      console.info(`[BuildTogether auth] Development code for ${email}: ${code}`);
-      return { delivered: false, developmentCode: code };
-    }
+  if (env.AUTH_EMAIL_MODE !== 'brevo') throw new Error('Set AUTH_EMAIL_MODE=brevo to send real sign-in emails.');
+  if (!env.BREVO_API_KEY || !env.BREVO_SENDER_EMAIL) throw new Error('Brevo is not configured. Set BREVO_API_KEY and BREVO_SENDER_EMAIL.');
 
-    throw new Error('RESEND_API_KEY is missing. Configure an email provider before production.');
+  const templateId = env.BREVO_TEMPLATE_ID ? Number(env.BREVO_TEMPLATE_ID) : undefined;
+  if (templateId !== undefined && (!Number.isSafeInteger(templateId) || templateId <= 0)) {
+    throw new Error('BREVO_TEMPLATE_ID must be a positive integer.');
   }
 
-  const resend = new Resend(env.RESEND_API_KEY);
-  const { error } = await resend.emails.send({
-    from: env.AUTH_EMAIL_FROM || 'BuildTogether <onboarding@resend.dev>',
-    to: [email],
-    subject: 'Your BuildTogether sign-in code',
-    html: `<div style="font-family:Arial,sans-serif;line-height:1.5"><h2>BuildTogether sign-in</h2><p>Use this code to continue:</p><p style="font-size:32px;font-weight:700;letter-spacing:8px">${code}</p><p>This code expires in 10 minutes. If you did not request it, you can ignore this email.</p></div>`
+  await sendBrevoVerificationCode(email, code, {
+    apiKey: env.BREVO_API_KEY,
+    senderEmail: env.BREVO_SENDER_EMAIL,
+    senderName: env.BREVO_SENDER_NAME || 'BuildTogether',
+    templateId
   });
-
-  if (error) {
-    throw new Error(`Email provider error: ${error.message}`);
-  }
 
   return { delivered: true };
 }
