@@ -83,12 +83,10 @@
 <div class="auth-page">
   <header class="auth-header">
     <a class="brand auth-brand" href="/" aria-label="BuildTogether home"><span class="brand-mark brand-image"><img src="/brand/handshake-emblem.png" alt="" /></span><span>Build<span>Together</span></span></a>
-    <a class="back-link" href="/"><ArrowLeft size={15} /> Back to projects</a>
   </header>
 
   <main class="auth-layout">
     <section class="auth-intro">
-      <p class="eyebrow">Welcome back</p>
       <h1>Bring your next idea to life.</h1>
       <p>Sign in to discover projects, connect with collaborators, and keep your work moving forward.</p>
       <div class="auth-promise"><span><Check size={14} /></span><div><strong>Built for students</strong><small>Everyone here is building something.</small></div></div>
@@ -108,9 +106,9 @@
           <button class="text-link auth-change" type="button" onclick={() => { codeRequested = false; code = ''; error = ''; }}>Use a different email</button>
         </div>
       {:else}
-        <p class="eyebrow">Student access</p><h2 id="login-title">Sign in to BuildTogether.</h2><p class="auth-copy">Use your email to continue. We will send you a six-digit sign-in code.</p>
+        <h2 id="login-title">Sign in to BuildTogether.</h2><p class="auth-copy">Use your email to continue. We will send you a six-digit sign-in code.</p>
         <form onsubmit={(event) => { event.preventDefault(); requestCode(); }} novalidate>
-          <label for="email">Email address<input id="email" bind:value={email} type="email" autocomplete="email" placeholder="you@example.com" aria-invalid={error.length > 0} /></label>
+          <label for="email">Email address<input id="email" bind:value={email} type="email" autocomplete="email" placeholder="you@byui.edu" aria-invalid={error.length > 0} /></label>
           {#if dev}<label for="demo-account">Try a demo project owner<select id="demo-account" value="" onchange={(event) => { if (event.currentTarget.value) email = event.currentTarget.value; error = ''; }}><option value="">Choose a fictional student</option>{#each demoAccounts as [name, address]}<option value={address}>{name}</option>{/each}</select></label><p class="demo-note">Development only. Choose a demo student, then use the code shown on this page. Sign out to switch accounts.</p>{/if}
           {#if error}<p class="form-error" role="alert">{error}</p>{/if}
           <button class="button button-dark button-full" type="submit" disabled={pending}>{pending ? 'Sending code…' : 'Send me a code'} <ArrowRight size={15} /></button>

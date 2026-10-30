@@ -225,3 +225,22 @@ button, input, select, textarea { font-family: var(--byui-body); }
   .topbar { height: auto; min-height: 65px; flex-wrap: wrap; padding-top: 12px; padding-bottom: 10px; row-gap: 8px; }
   .topbar .top-actions { width: 100%; justify-content: flex-end; }
 }
+
+/* Landing page hero artwork */
+.hero-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 390px;
+  position: relative;
+}
+.hero-logo {
+  display: block;
+  width: 100%;
+  max-width: 470px;
+  height: auto;
+  object-fit: contain;
+}
+@media (max-width: 720px) {
+  .hero-logo { max-width: 390px; }
+}

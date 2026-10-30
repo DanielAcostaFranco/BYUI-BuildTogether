@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { filterDashboardProjects } from '$lib/types';
+  import Brand from '$lib/components/Brand.svelte';
 
   export let data: PageData;
   let query = '';
@@ -23,7 +24,7 @@
 <svelte:head><title>Home — BuildTogether</title><meta name="description" content="Your BuildTogether student dashboard." /></svelte:head>
 
 <div class="dashboard-page">
-  <header class="dashboard-header"><a class="brand" href="/home" aria-label="BuildTogether home"><span class="brand-mark brand-image"><img src="/brand/handshake-emblem.png" alt="" /></span><span>Build<span>Together</span></span></a><nav><a href="/home" class="active">Home</a><a href="/applications">My applications</a><a href="/projects/mine">My projects</a><a href="/profile"><UserRound size={14} /> Profile</a><a class="button button-dark button-small" href="/projects/new"><Plus size={14} /> Start a project</a></nav></header>
+  <header class="dashboard-header"><Brand href="/home" /><nav><a href="/home" class="active">Home</a><a href="/applications">My applications</a><a href="/projects/mine">My projects</a><a href="/profile"><UserRound size={14} /> Profile</a><a class="button button-dark button-small" href="/projects/new"><Plus size={14} /> Start a project</a></nav></header>
   <main class="dashboard-main">
     <section class="welcome"><div><p class="eyebrow">Your BuildTogether home</p><h1>Welcome back, {firstName}.</h1><p>Find a project that fits your curiosity, your skills, and the time you have.</p></div><div class="welcome-actions"><a class="button button-dark" href="/projects/new">Start a project <ArrowRight size={15} /></a><a class="button button-outline" href="/profile">Complete your profile</a></div></section>
     <section class="dashboard-stats"><div><span class="stat-icon"><Search size={16} /></span><strong>{data.projects.length}</strong><span>projects to explore</span></div><div><span class="stat-icon"><Users size={16} /></span><strong>61</strong><span>students building together</span></div><div><span class="stat-icon"><Clock3 size={16} /></span><strong>2–5 hrs</strong><span>typical weekly commitment</span></div></section>
