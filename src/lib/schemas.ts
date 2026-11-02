@@ -33,7 +33,7 @@ export const projectSchema = z.object({
   title: z.string().trim().min(3, 'Add a project title.').max(100),
   summary: z.string().trim().min(20, 'Tell people a little more about the project.').max(360),
   category: z.enum(['Technology', 'Design', 'Community', 'Business', 'Research']),
-  status: z.enum(['Recruiting', 'Idea', 'In progress', 'Completed']).optional(),
+  status: z.enum(['Recruiting', 'In progress', 'Completed']).optional(),
   department: z.string().trim().min(2, 'Add the department or academic area.').max(80),
   skills: z.array(z.string().trim().min(1)).min(1, 'Add at least one skill.').max(12),
   interests: z.array(z.string().trim().min(1)).max(12).default([]),

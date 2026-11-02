@@ -1,6 +1,6 @@
 export type ProjectCategory = 'Technology' | 'Design' | 'Community' | 'Business' | 'Research';
 export type LocationType = 'Remote' | 'Hybrid' | 'In person';
-export type ProjectStatus = 'Recruiting' | 'Idea' | 'In progress' | 'Completed';
+export type ProjectStatus = 'Recruiting' | 'In progress' | 'Completed';
 export type ProjectRole = { id?: string; title: string; description: string; skills: string[]; peopleNeeded: number };
 export type ProjectLink = { label: string; url: string };
 export type ProjectUpdate = { id: string; text: string; authorId: string; authorName: string; createdAt: Date };
@@ -70,20 +70,6 @@ export const projects: Project[] = [
     hoursPerWeek: '4–6 hrs / week',
     location: 'Remote',
     openRoles: 2
-  },
-  {
-    id: 'rexburg-first-week',
-    title: 'A better first week in Rexburg',
-    summary: 'Student research exploring how new students find community, resources, and belonging.',
-    category: 'Research',
-    status: 'Idea',
-    department: 'Social Sciences',
-    creator: 'Daniel',
-    initials: 'D',
-    skills: ['Interviews', 'Figma', 'Community'],
-    hoursPerWeek: '3 hrs / week',
-    location: 'Hybrid',
-    openRoles: 4
   },
   {
     id: 'viking-market',

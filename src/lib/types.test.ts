@@ -8,8 +8,7 @@ describe('filterProjects', () => {
 
   it('matches project skills and department case-insensitively', () => {
     expect(filterProjects(projects, 'figma', 'All projects').map((project) => project.id)).toEqual([
-      'food-waste-map',
-      'rexburg-first-week'
+      'food-waste-map'
     ]);
   });
 
@@ -23,7 +22,7 @@ describe('filterDashboardProjects', () => {
   it('combines category, status, and location without changing the source list', () => {
     const result = filterDashboardProjects(projects, '', 'Community', 'Recruiting', 'Remote');
     expect(result.map((project) => project.id)).toEqual(['viking-voices']);
-    expect(projects).toHaveLength(6);
+    expect(projects).toHaveLength(5);
   });
 
   it('returns no projects when filters have no match', () => {

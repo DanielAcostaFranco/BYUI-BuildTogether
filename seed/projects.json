@@ -45,21 +45,6 @@
     "createdAt": "2026-10-21T00:00:00.000Z"
   },
   {
-    "id": "rexburg-first-week",
-    "title": "A better first week in Rexburg",
-    "summary": "Student research exploring how new students find community, resources, and belonging.",
-    "category": "Research",
-    "status": "Idea",
-    "department": "Social Sciences",
-    "creatorId": "daniel-admin",
-    "skills": ["Interviews", "Figma", "Community"],
-    "hoursPerWeek": "3 hrs / week",
-    "location": "Hybrid",
-    "openRoles": 4,
-    "featured": false,
-    "createdAt": "2026-10-21T00:00:00.000Z"
-  },
-  {
     "id": "viking-market",
     "title": "Viking Market",
     "summary": "A student marketplace concept for sharing small businesses, handmade goods, and services.",

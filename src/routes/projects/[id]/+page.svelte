@@ -11,7 +11,7 @@
   let confirmation: { applicationId: string; decision: 'accept' | 'reject'; applicantName: string; roleTitle: string } | null = null;
   let reviewPending = false, reviewError = '';
   onMount(() => document.querySelector('.project-detail-page')?.setAttribute('data-app-ready', 'true'));
-  $: canRecruit = (data.project.status === 'Recruiting' || data.project.status === 'Idea') && data.currentMembers < (data.project.teamSize ?? data.project.openRoles + 1) && data.vacancies.some((role) => role.remaining > 0);
+  $: canRecruit = data.project.status === 'Recruiting' && data.currentMembers < (data.project.teamSize ?? data.project.openRoles + 1) && data.vacancies.some((role) => role.remaining > 0);
   $: teamIsFull = data.currentMembers >= (data.project.teamSize ?? data.project.openRoles + 1) || (data.vacancies.length > 0 && data.vacancies.every((role) => role.remaining === 0));
 
   async function apply() {

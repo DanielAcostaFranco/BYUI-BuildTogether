@@ -56,7 +56,7 @@
           <a class="button button-dark" href="#projects">Explore projects <ArrowRight size={16} /></a>
           <a class="text-link" href="#how-it-works">See how it works <ArrowRight size={15} /></a>
         </div>
-        <div class="hero-proof"><span class="proof-avatars"><i>AM</i><i>SW</i><i>NL</i><i>+ </i></span><span><strong>5 students</strong> are collaborating this month</span></div>
+        <div class="hero-proof"><span class="proof-avatars"><i>AM</i><i>SW</i><i>NL</i><i>+ </i></span><span><strong>{data.registeredUserCount} registered users</strong> are building together</span></div>
       </div>
       <div class="hero-art" aria-label="BuildTogether emblem">
         <img class="hero-logo" src="/brand/handshake-emblem.png" alt="BuildTogether handshake emblem" />

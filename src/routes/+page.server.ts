@@ -7,5 +7,9 @@ export async function load({ cookies }) {
   const database = await getDatabase();
   const user = await getSessionUser(database, cookies.get('buildtogether_session'));
   if (user) redirect(303, '/home');
-  return getProjects();
+  const [projectsData, registeredUserCount] = await Promise.all([
+    getProjects(),
+    database.collection('users').countDocuments({})
+  ]);
+  return { ...projectsData, registeredUserCount };
 }

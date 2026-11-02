@@ -94,7 +94,7 @@ function demoProjects() {
     return {
       id: `demo-project-${String(number).padStart(3, '0')}`,
       title, summary, category, department, creatorId: demoCreatorIds[index % demoCreatorIds.length],
-      status: index % 7 === 0 ? 'Idea' : 'Recruiting',
+      status: 'Recruiting',
       skills: [skill, 'Collaboration'], interests: [interest],
       roles: [
         { title: `${skill} contributor`, description: `Help shape and deliver the ${title.toLowerCase()} project using ${skill.toLowerCase()}.`, skills: [skill], peopleNeeded: 1 },

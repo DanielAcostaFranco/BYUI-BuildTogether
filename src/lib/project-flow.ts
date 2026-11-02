@@ -18,5 +18,5 @@ export function recruitmentStatus(status: ProjectStatus, teamSize: number, membe
 }
 
 export function canAcceptApplication(status: ProjectStatus, teamSize: number, memberCount: number, roleRemaining: number) {
-  return (status === 'Recruiting' || status === 'Idea') && memberCount < teamSize && roleRemaining > 0;
+  return status === 'Recruiting' && memberCount < teamSize && roleRemaining > 0;
 }
