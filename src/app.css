@@ -185,6 +185,21 @@ button, input, select, textarea { font-family: var(--byui-body); }
 .button-outline:hover { background: #eef8ff; }
 :is(.dashboard-page, .profile-page, .applications-page, .mine-page, .project-detail-page, .team-page, .create-page, .edit-page, .auth-page) :is(input:not([type="checkbox"]), select, textarea) { border-radius: 9px; }
 :is(.dashboard-page, .profile-page, .applications-page, .mine-page, .project-detail-page, .team-page, .create-page, .edit-page, .auth-page) :is(input:not([type="checkbox"]), select, textarea):focus-visible { border-color: var(--byui-blue); box-shadow: 0 0 0 4px rgba(0, 110, 182, .12); }
+:is(.dashboard-page, .profile-page, .applications-page, .mine-page, .project-detail-page, .team-page, .create-page, .edit-page, .auth-page) :is(.form-card, .detail-card, .side-card, .application-card, .mine-card, .member-card, .profile-card) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+:is(.dashboard-page, .profile-page, .applications-page, .mine-page, .project-detail-page, .team-page, .create-page, .edit-page, .auth-page) :is(input:not([type="checkbox"]), select, textarea) {
+  min-width: 0;
+  max-width: 100%;
+}
+:is(.dashboard-page, .profile-page, .applications-page, .mine-page, .project-detail-page, .team-page, .create-page, .edit-page, .auth-page) textarea {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+:is(.dashboard-page, .profile-page, .applications-page, .mine-page, .project-detail-page, .team-page, .create-page, .edit-page, .auth-page) :is(.field-row > *, .role, .link-row > *) {
+  min-width: 0;
+}
 
 @media (max-width: 720px) {
   .session-dock { right: 12px; bottom: 12px; }
